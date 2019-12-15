@@ -1,0 +1,130 @@
+# Copyright (c) 2017-2019 Intel Corporation
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+cmake_minimum_required( VERSION 3.14 )
+set(PROJECT_NAME intel_qsv_decoder)
+project( ${PROJECT_NAME} )
+
+# set CMAKE_INSTALL_PREFIX
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR}/build CACHE PATH "..." FORCE)
+endif()
+set(EXECUTABLE_OUTPUT_PATH bin)
+set(LIBRARY_OUTPUT_PATH lib)
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+# Disable ZERO_CHECK project
+set(CMAKE_SUPPRESS_REGENERATION true)
+
+# Default to `release` build if nothing was specified
+if(NOT CMAKE_BUILD_TYPE)
+  message(STATUS "No build type selected, default to release")
+  set(CMAKE_BUILD_TYPE release)
+endif()
+
+if( NOT DEFINED CMAKE_MFX_HOME )
+  set( CMAKE_MFX_HOME "${CMAKE_HOME_DIRECTORY}/api" )
+endif()
+
+set(TARGET_INCLUDES "")
+set(TARGET_LIBRARIES "")
+
+# IPP
+find_package(IPP)
+if(IPP_FOUND)
+  add_definitions ( -DHAVE_IPP )
+  list(APPEND TARGET_INCLUDES "${IPP_INCLUDE_DIRS}")
+  list(APPEND TARGET_LIBRARIES "${IPP_LIBRARIES}")
+endif()
+
+# OpenCV for test
+find_package(OpenCV)
+if(OpenCV_FOUND)
+  list(APPEND TARGET_INCLUDES "${OpenCV_INCLUDE_DIRS}")
+  list(APPEND TARGET_LIBRARIES "${OpenCV_LIBS}")
+endif()
+
+add_definitions("-DNOMINMAX")
+add_definitions("-DWIN64")
+add_definitions("-D__SSE2__")
+
+add_library(${PROJECT_NAME} SHARED
+  ${CMAKE_HOME_DIRECTORY}/src/intel_qsv_decoder_api.cpp
+  ${CMAKE_HOME_DIRECTORY}/src/intel_qsv_decoder_api.h
+  ${CMAKE_HOME_DIRECTORY}/src/intel_video_decoder.cpp
+  ${CMAKE_HOME_DIRECTORY}/src/intel_video_decoder.h
+  ${CMAKE_HOME_DIRECTORY}/src/YuvRgbConvert.cpp
+  ${CMAKE_HOME_DIRECTORY}/src/YuvRgbConvert.h
+)
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_MFX_HOME}/include
+    ${TARGET_INCLUDES}
+)
+target_link_libraries(${PROJECT_NAME}
+    ${CMAKE_HOME_DIRECTORY}/lib/libmfx_vs2015.lib
+    ${TARGET_LIBRARIES}
+)
+
+
+### executable for testing
+set(DEC "intel_qsv_decoder_test_exe")
+add_executable(${DEC}
+  ${CMAKE_HOME_DIRECTORY}/src/intel_video_decoder.cpp
+  ${CMAKE_HOME_DIRECTORY}/src/intel_video_decoder.h
+  ${CMAKE_HOME_DIRECTORY}/src/YuvRgbConvert.cpp
+  ${CMAKE_HOME_DIRECTORY}/src/YuvRgbConvert.h
+  ${CMAKE_HOME_DIRECTORY}/src/main.cpp
+)
+target_include_directories(${DEC} PRIVATE
+    ${CMAKE_MFX_HOME}/include
+    ${TARGET_INCLUDES}
+)
+target_link_libraries(${DEC}
+    ${CMAKE_HOME_DIRECTORY}/lib/libmfx_vs2015.lib
+    ${TARGET_LIBRARIES}
+)
+
+set(SIM_DEC "simple_decoder_test_exe")
+add_executable(${SIM_DEC}
+  ${CMAKE_HOME_DIRECTORY}/src/simple_decoder.cpp
+)
+target_include_directories(${SIM_DEC} PRIVATE
+    ${CMAKE_MFX_HOME}/include
+    ${TARGET_INCLUDES}
+)
+target_link_libraries(${SIM_DEC}
+    ${CMAKE_HOME_DIRECTORY}/lib/libmfx_vs2015.lib
+    ${TARGET_LIBRARIES}
+)
+
+set(SIM2_DEC "simple_decoder2_test_exe")
+add_executable(${SIM2_DEC}
+  ${CMAKE_HOME_DIRECTORY}/src/simple_decoder2.cpp
+)
+target_include_directories(${SIM2_DEC} PRIVATE
+    ${CMAKE_MFX_HOME}/include
+    ${TARGET_INCLUDES}
+)
+target_link_libraries(${SIM2_DEC}
+    ${CMAKE_HOME_DIRECTORY}/lib/libmfx_vs2015.lib
+    ${TARGET_LIBRARIES}
+)
+
+
+

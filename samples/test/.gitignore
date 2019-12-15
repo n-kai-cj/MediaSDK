@@ -1,0 +1,16 @@
+# build folder
+__cmake/
+tests/gold/
+tests/results/
+tests/ted/__pycache__/
+tests/test_results.json
+.vs
+samples/_build
+*.user
+build/
+*.class
+*.dll
+*.264
+*.mp4
+*.265
+*.es
