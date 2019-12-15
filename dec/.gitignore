@@ -1,0 +1,6 @@
+# build folder
+__cmake/
+tests/
+*.user
+build/
+.vscode

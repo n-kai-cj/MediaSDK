@@ -7,3 +7,4 @@ tests/test_results.json
 .vs
 samples/_build
 *.user
+build/
