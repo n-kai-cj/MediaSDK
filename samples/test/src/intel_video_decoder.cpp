@@ -66,6 +66,8 @@ int IntelQsvH264Decoder::initialize()
     memset(&mfxBS, 0, sizeof(mfxBS));
     mfxBS.MaxLength = MAX_BUFFER_BYTES;
     mfxBS.Data = (mfxU8*)malloc(sizeof(mfxU8) * mfxBS.MaxLength);
+    mfxBS.DataOffset = 0;
+    mfxBS.DataLength = 0;
 
     return sts;
 }
@@ -193,6 +195,16 @@ int IntelQsvH264Decoder::decode(uint8_t* in, size_t in_length)
     if (decodeHeader(in, in_length) < 0)
     {
         fprintf(stderr, "error: decode header error\n");
+        return -1;
+    }
+
+    // avoid MFX_ERR_INCOMPATIBLE_VIDEO_PARAM
+    if (in_length > 5 && in_length < 50 &&
+        ((in[0] == 0 && in[1] == 0 && in[2] == 0 && in[3] == 1 && ((in[4] & 0x0f) == 7 || (in[4] & 0x0f) == 8)) ||
+        (in[0] == 0 && in[1] == 0 && in[2] == 1 && ((in[3] & 0x0f) == 7 || (in[3] & 0x0f) == 8))))
+    {
+        // may be SPS/PPS only packet
+        // MFX Decode is imcompatible for only them
         return -1;
     }
 

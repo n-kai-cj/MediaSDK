@@ -29,6 +29,7 @@ SOFTWARE.
 #include <memory>
 #include <vector>
 #include <algorithm>
+#include <mutex>
 
 #include "mfxvideo++.h"
 

@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required( VERSION 3.14 )
+cmake_minimum_required( VERSION 3.10 )
 set(PROJECT_NAME intel_qsv_decoder)
 project( ${PROJECT_NAME} )
 
@@ -53,8 +53,14 @@ if(IPP_FOUND)
   list(APPEND TARGET_LIBRARIES "${IPP_LIBRARIES}")
 endif()
 
+if(WIN32)
+  set(WIN_LIBRARIES ${CMAKE_HOME_DIRECTORY}/lib/libmfx_vs2015.lib)
+  add_definitions("-DWIN64")
+else()
+  set(LIN_LIBRARIES "")
+endif()
+
 add_definitions("-DNOMINMAX")
-add_definitions("-DWIN64")
 add_definitions("-D__SSE2__")
 
 add_library(${PROJECT_NAME} SHARED
@@ -66,10 +72,11 @@ add_library(${PROJECT_NAME} SHARED
   ${CMAKE_HOME_DIRECTORY}/src/YuvRgbConvert.h
 )
 target_include_directories(${PROJECT_NAME} PRIVATE
-    ${CMAKE_MFX_HOME}/include
-    ${TARGET_INCLUDES}
+  ${CMAKE_MFX_HOME}/include
+  ${TARGET_INCLUDES}
 )
 target_link_libraries(${PROJECT_NAME}
-    ${CMAKE_HOME_DIRECTORY}/lib/libmfx_vs2015.lib
-    ${TARGET_LIBRARIES}
+  ${WIN_LIBRARIES}
+  ${LIN_LIBRARIES}
+  ${TARGET_LIBRARIES}
 )

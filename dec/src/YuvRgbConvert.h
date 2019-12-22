@@ -22,7 +22,11 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <cstring>
+#ifdef _WIN32
 #include <intrin.h> // for SSE
+#elif __linux__
+#include <x86intrin.h> // all intrinsic
+#endif
 
 #ifdef HAVE_IPP
 #include <ipp.h> // for IPP
